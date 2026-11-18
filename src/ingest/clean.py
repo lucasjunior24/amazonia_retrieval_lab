@@ -33,6 +33,11 @@ def clean_text(text: str) -> str:
     return text.strip()
 
 
+def is_toc_page(text: str, min_leaders: int = 3) -> bool:
+    """Sumário / lista de figuras / lista de tabelas: várias linhas com pontilhado ('.......37')."""
+    return len(re.findall(r"\.{5,}|(?:\. ){4,}", text)) >= min_leaders
+
+
 def clean_all(min_chars: int = 50) -> None:
     CLEAN.mkdir(parents=True, exist_ok=True)
     for path in sorted(INTERIM.glob("*.json")):
@@ -41,7 +46,8 @@ def clean_all(min_chars: int = 50) -> None:
         pages = []
         for p, text in zip(doc["pages"], raw_pages):
             text = clean_text(text)
-            if len(text) >= min_chars:  # descarta páginas quase vazias
+            # descarta páginas quase vazias e páginas de sumário/listas
+            if len(text) >= min_chars and not is_toc_page(text):
                 pages.append({"page": p["page"], "text": text})
         (CLEAN / path.name).write_text(
             json.dumps({"doc_id": doc["doc_id"], "pages": pages}, ensure_ascii=False),

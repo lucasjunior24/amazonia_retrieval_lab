@@ -12,3 +12,4 @@ data/interim/
 /data/processed
 rules
 rules/
+*.egg-info/
